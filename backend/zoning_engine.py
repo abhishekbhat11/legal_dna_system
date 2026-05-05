@@ -1,22 +1,35 @@
-import re
+import joblib
+import os
 
-def categorize_zones(blocks):
+# Load the trained ML model into memory when the server starts
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "ml_models/zoning_classifier.joblib")
+
+try:
+    zoning_classifier = joblib.load(MODEL_PATH)
+except FileNotFoundError:
+    print("⚠️ ML Model not found! Did you run train_zoning_model.py?")
+    zoning_classifier = None
+
+def classify_paragraph(text: str) -> str:
+    """Predicts the semantic zone of a given paragraph."""
+    if not text.strip() or not zoning_classifier:
+        return "Unknown Zone"
+    
+    # The ML model predicts the label instantly
+    prediction = zoning_classifier.predict([text])[0]
+    return prediction
+
+def zone_document(pdf_blocks):
+    """Takes blocks of text from PyMuPDF and tags them with ML."""
     zoned_blocks = []
-    for block in blocks:
-        text = block['text'].lower()
-        zone = "Background Zone" # Default
-        
-        # Simple rule-based classifier based on common Indian legal phrasing
-        if re.search(r'(in the high court of|writ petition|between:|\. \. \. petitioner)', text):
-            zone = "Preamble Zone"
-        elif re.search(r'(the facts of the case|the petitioner submits|case of the petitioner)', text):
-            zone = "Background Zone"
-        elif re.search(r'(it is observed|we are of the considered opinion|cannot be accepted|it is clear that)', text):
-            zone = "Observation Zone"
-        elif re.search(r'(directed to|ordered that|shall comply|is quashed|writ of mandamus)', text):
-            zone = "Direction Zone"
-            
-        block['zone'] = zone
-        zoned_blocks.append(block)
+    
+    for block in pdf_blocks:
+        zone_label = classify_paragraph(block["text"])
+        zoned_blocks.append({
+            "text": block["text"],
+            "start_char": block["start_char"],
+            "end_char": block["end_char"],
+            "zone": zone_label
+        })
         
     return zoned_blocks

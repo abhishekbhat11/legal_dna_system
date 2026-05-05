@@ -5,9 +5,11 @@ services:
     build: ./backend
     ports:
       - "8000:8000"
-    environment:
+    env_file:
+      - .env  
+    #environment:
       # Pass your Gemini API key to the container!
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    #  - GEMINI_API_KEY=${GEMINI_API_KEY}
     volumes:
       # Mount the database file so data persists even if the container restarts
       - ./backend/legaldna.db:/app/legaldna.db

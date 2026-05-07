@@ -10,6 +10,38 @@ export default function VerificationCockpit({ data, rawTextBlocks, onVerifyAll }
     setVerifiedFields(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
+  // NEW: The Delivery Truck function that loops through all cards and saves them
+  const handleSendToDashboard = async () => {
+    try {
+      // Loop through every direction and send it to the SQLite database on Render
+      for (const direction of genome.directions) {
+        await fetch("https://legal-dna-system-1.onrender.com/api/save-dna", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            action_subject: direction.action_subject,
+            action_verb: direction.action_verb,
+            timeline: direction.timeline_explicit || direction.timeline_inferred || "None",
+            strategy: direction.compliance_vs_appeal,
+            source_text: direction.source_span?.exact_text || "No source text provided."
+          }),
+        });
+      }
+
+      alert("Success! All directives saved to Mission Control Dashboard.");
+      
+      // Also trigger your original onVerifyAll function so the rest of your app updates
+      if (onVerifyAll) {
+        onVerifyAll(genome);
+      }
+    } catch (error) {
+      console.error("Error saving data:", error);
+      alert("Could not connect to the backend to save data.");
+    }
+  };
+
   return (
     <div className="flex h-[calc(100vh-80px)] bg-gray-50 overflow-hidden">
       {/* LEFT PANEL: Document Viewer */}
@@ -36,7 +68,8 @@ export default function VerificationCockpit({ data, rawTextBlocks, onVerifyAll }
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-slate-800">Verification Cockpit</h2>
           <button 
-            onClick={() => onVerifyAll(genome)}
+            // Hooked up the button to our new save function!
+            onClick={handleSendToDashboard}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-semibold flex items-center gap-2 transition-colors">
             Send to Dashboard <ArrowRight size={16}/>
           </button>
@@ -85,7 +118,7 @@ export default function VerificationCockpit({ data, rawTextBlocks, onVerifyAll }
               {/* Source Span Traceability */}
               <div className="text-xs text-gray-500 bg-gray-100 p-3 rounded-md mt-4 border border-gray-200">
                 <span className="font-bold text-gray-700 block mb-1">Source Quote:</span> 
-                "{dir.source_span.exact_text}"
+                "{dir.source_span?.exact_text || "No exact text available."}"
               </div>
             </div>
           </div>

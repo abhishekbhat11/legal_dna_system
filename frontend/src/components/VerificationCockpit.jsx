@@ -13,9 +13,9 @@ export default function VerificationCockpit({ data, rawTextBlocks, onVerifyAll }
   // NEW: The Delivery Truck function that loops through all cards and saves them
   const handleSendToDashboard = async () => {
     try {
-      // Loop through every direction and send it to the SQLite database
+      // Loop through every direction and send it to the SQLite database on Render
       for (const direction of genome.directions) {
-        await fetch("http://127.0.0.1:8000/api/save-dna", {
+        await fetch("https://legal-dna-system-1.onrender.com/api/save-dna", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -68,7 +68,7 @@ export default function VerificationCockpit({ data, rawTextBlocks, onVerifyAll }
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-slate-800">Verification Cockpit</h2>
           <button 
-            // NEW: Hooked up the button to our new save function!
+            // Hooked up the button to our new save function!
             onClick={handleSendToDashboard}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-semibold flex items-center gap-2 transition-colors">
             Send to Dashboard <ArrowRight size={16}/>

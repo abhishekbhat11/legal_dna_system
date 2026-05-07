@@ -6,9 +6,9 @@ export default function TrustedDashboard({ verifiedData }) {
   // 1. State to hold the historical data from our SQLite database
   const [dbStats, setDbStats] = useState([]);
 
-  // 2. Fetch the aggregated data from the backend on load
+  // 2. Fetch the aggregated data from the Render backend on load
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/dashboard-stats")
+    fetch("https://legal-dna-system-1.onrender.com/api/dashboard-stats")
       .then(res => res.json())
       .then(data => setDbStats(data))
       .catch(err => console.error("Error fetching stats:", err));
@@ -52,7 +52,7 @@ export default function TrustedDashboard({ verifiedData }) {
           </div>
         </div>
 
-        {/* NEW: Recharts Database Visualization */}
+        {/* Recharts Database Visualization */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8 h-96">
           <h3 className="text-gray-800 font-bold mb-4">Historical Department Posture (Database)</h3>
           {dbStats.length > 0 ? (
